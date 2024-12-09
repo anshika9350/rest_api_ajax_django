@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Employee List with jQuery</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <style>
+      table {
+        width: 50%;
+        border-collapse: collapse;
+        margin: 20px auto;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center">Employee List</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone_no</th>
+        </tr>
+      </thead>
+      <tbody id="employee-table-body"></tbody>
+    </table>
+    <div class="row pt-5 mt-5">
+      <div class="col-4 ps-5">
+        <form id="employee-form" style="left-margin: auto; right-margin: auto">
+          <h1>Add Employee</h1>
+          <label for="html">Name:</label><br />
+          <input type="text" id="name"/><br />
+          <label for="css">Phone Number:</label><br />
+          <input type="number" id="phone_no"/><br /><br />
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      <div class="col-4 ps-5">
+        <form
+          id="delete_employee"
+          style="left-margin: auto; right-margin: auto"
+        >
+          <h1>Delete Employee</h1>
+          <label for="html">Name:</label><br />
+          <input type="text" id="delname"/><br><br>
+   
+          <button type="submit">Delete</button>
+        </form>
+      </div>
+      <div class="col-4 ps-5">
+        <form id="update_employee" style="left-margin: auto; right-margin: auto">
+          <h1>Update Employee</h1>
+          <label for="html">Name:</label><br/>
+          <input type="text" id="updatename"/><br/>
+          <label for="css">Phone No:</label><br/>
+          <input type="number" id="update_phone_no"/></br></br>
+          <button type="submit">Update</button>
+        </form>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // Fetch data using AJAX (GET REQUEST)
+      function fetchEmployees() {
+        $(document).ready(function () {
+          $.ajax({
+            url: "http://127.0.0.1:8000/student", // API endpoint
+            method: "GET",
+            success: function (data) {
+              const tableBody = $("#employee-table-body");
+              tableBody.empty(); // Clear existing content
+
+              // Loop through data and append rows to the table
+              data.forEach((employee) => {
+                tableBody.append(`
+                <tr>
+                  <td>${employee.name}</td>
+                  <td>${employee.phone_no}</td>
+                </tr>
+              `);
+              });
+            },
+            error: function (err) {
+              console.error("Error fetching employees:", err);
+            },
+          });
+        });
+      }
+
+      // Send data using AJAX (POST REQUEST)
+      $("#employee-form").on("submit", function (event) {
+        event.preventDefault(); // Prevent form from submitting the traditional way
+        const name = $("#name").val();
+        const phone_no = $("#phone_no").val();
+
+        $.ajax({
+          url: "http://127.0.0.1:8000/create_student",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ name, phone_no }),
+          success: function (newEmployee) {
+            alert("Employee added successfully!");
+            fetchEmployees(); // Refresh the employee table
+            $("#employee-form")[0].reset(); // Reset the form
+          },
+          error: function (err) {
+            console.error("Error adding employee:", err);
+            alert("Failed to add employee. Please try again.");
+          },
+        });
+      });
+
+    // Delete data using AJAX (DELETE REQUEST)
+      $("#delete_employee").on("submit", function (event) {
+        event.preventDefault(); // Prevent form from submitting the traditional way
+        const name = $("#delname").val();
+
+        $.ajax({
+          url: "http://127.0.0.1:8000/student/" + name + "/delete",
+          method: "DELETE",
+          success: function (Employee) {
+            alert("Employee deleted successfully!");
+            fetchEmployees(); // Refresh the employee table
+            $("#employee-form")[0].reset(); // Reset the form
+          },
+          error: function (err) {
+            console.error("Error deleting employee:", err);
+            alert("Failed to delete employee. Please try again.");
+          },
+        });
+      });
+      
+    // Update data using AJAX (PATCH REQUEST)
+    $("#update_employee").on("submit", function (event) {
+      event.preventDefault(); // Prevent form from submitting the traditional way
+      const name = $("#updatename").val();
+      const phone_no = $("#update_phone_no").val();
+      $.ajax({
+        url: "http://127.0.0.1:8000/update/" + name,
+        method: "PATCH",
+        contentType: "application/json",
+        data: JSON.stringify({phone_no}),
+        success: function (newEmployee) {
+          alert("Employee updated successfully!");
+          fetchEmployees(); // Refresh the employee table
+          $("#employee-form")[0].reset(); // Reset the form
+        },
+        error: function (err) {
+          console.error("Error updating employee:", err);
+          alert("Failed to update employee. Please try again.");
+        },
+      });
+    });
+      
+
+     
+      
+
+      // Fetch employees on page load
+      $(document).ready(fetchEmployees);
+    </script>
+  </body>
+</html>
